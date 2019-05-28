@@ -8,6 +8,12 @@ provider "aws" {
 
 terraform {
   required_version = "< 0.12.0"
+
+  backend "s3" {
+    bucket = "sam.pcfs.practice"
+    key    = "control-plane/terraform.tfstate"
+    region = "us-east-1"
+  }
 }
 
 provider "random" {
@@ -102,22 +108,3 @@ module "rds" {
   tags = "${local.actual_tags}"
 }
 
-resource "null_resource" "create_databases" {
-  count = "${var.rds_instance_count == 1 ? 1 : 0}"
-
-  provisioner "local-exec" {
-    command     = "./db/create_databases.sh"
-    interpreter = ["bash", "-c"]
-
-    environment {
-      OPSMAN_URL         = "${module.ops_manager.public_ip}"
-      OPSMAN_PRIVATE_KEY = "${module.ops_manager.ssh_private_key}"
-
-      RDS_DB_NAME  = "${module.rds.rds_db_name}"
-      RDS_PORT     = "${module.rds.rds_port}"
-      RDS_ADDRESS  = "${module.rds.rds_address}"
-      RDS_USERNAME = "${module.rds.rds_username}"
-      RDS_PASSWORD = "${module.rds.rds_password}"
-    }
-  }
-}

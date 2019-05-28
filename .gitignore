@@ -1,0 +1,9 @@
+ci/
+scripts/
+*.tfvars
+*.pem
+.envrc
+*.tfstate
+*.tfplan
+*.tfstate.backup
+terraforming-control-plane/.terraform/

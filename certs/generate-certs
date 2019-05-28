@@ -1,0 +1,4 @@
+sudo certbot --server https://acme-v02.api.letsencrypt.org/directory \
+-d control.sam.pcftest.net \
+-d *.control.sam.pcftest.net \
+--manual --preferred-challenges dns-01 certonly
