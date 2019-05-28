@@ -112,3 +112,24 @@ vmextensions-configuration:
   - name: control-plane-lb-security-groups
     cloud_properties:
       security_groups: ["control_plane_security_group", "vms_security_group"]
+  - name: credhub-lb-cloud-properties
+    cloud_properties:
+      security_groups:
+      - ((credhub_lb_security_group))
+      - vms_security_group
+      lb_target_groups:
+      - ((credhub_lb_target_group))
+  - name: uaa-lb-cloud-properties
+    cloud_properties:
+      security_groups:
+      - ((uaa_lb_security_group))
+      - vms_security_group
+      lb_target_groups:
+      - ((uaa_lb_target_group))
+  - name: control-plane-lb-cloud-properties
+    cloud_properties:
+      security_groups:
+      - ((web_lb_security_group))
+      - vms_security_group
+      lb_target_groups:
+      - ((web_lb_target_group))

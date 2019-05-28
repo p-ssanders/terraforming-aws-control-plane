@@ -2,9 +2,10 @@
 
 Reference Documentation: https://control-plane-docs.cfapps.io/
 
-All commands assume `pwd` is `terraforming-control-plane`
+All commands assume `pwd` is `terraforming-control-plane` unless directed otherwise.
 
 1.  Terraform
+
     ```
     terraform init
     terraform plan -out=control-plane.tfplan
@@ -13,9 +14,12 @@ All commands assume `pwd` is `terraforming-control-plane`
 
 1.  Update DNS
 
+    *TODO* terraform should do this
+
     https://docs.pivotal.io/pivotalcf/2-5/om/aws/prepare-env-terraform.html#dns
 
 1.  Configure OpsManager
+
     ```
     export OM_TARGET=https://$(terraform output ops_manager_dns)
     export OM_USERNAME=admin
@@ -24,6 +28,19 @@ All commands assume `pwd` is `terraforming-control-plane`
     om configure-authentication -u $OM_USERNAME -p $OM_PASSWORD -dp keepitsimple
     om update-ssl-certificate --certificate-pem "$(cat ../certs/fullchain.pem)" --private-key-pem "$(cat ../certs/privkey.pem)"
     unset OM_SKIP_SSL_VALIDATION
+    ```
+
+1.  Configure BOSH Director
+
+    ```
+    om configure-director -c ../config/bosh-director.yml --vars-file ../variables/bosh-director.yml --vars-file ../secrets/bosh-director.yml
+    ```
+
+1.  Apply Changes
+
+    ```
+    om pending-changes
+    om apply-changes
     ```
 
 1.  Create Control Plane Databases
@@ -48,17 +65,6 @@ All commands assume `pwd` is `terraforming-control-plane`
         create database uaa;
         ```
 
-1.  Configure BOSH Director 
-    ```
-    om configure-director -c ../config/bosh-director.yml --vars-file ../variables/bosh-director.yml --vars-file ../secrets/bosh-director.yml
-    ```
-
-1.  Apply Changes
-    ```
-    om pending-changes
-    om apply-changes
-    ```
-
 1.  Upload Control Plane Components BOSH Releases
 
     *   SSH to OpsManager VM
@@ -74,7 +80,7 @@ All commands assume `pwd` is `terraforming-control-plane`
         cp pivnet-linux-amd64-0.0.58 /usr/bin/pivnet
         ```
 
-    *   Download the Control Plane Components
+    *   Download the Control Plane Components BOSH Releases
         ```
         pivnet login --api-token <YOUR_PIVNET_TOKEN>
 
@@ -93,7 +99,7 @@ All commands assume `pwd` is `terraforming-control-plane`
         pivnet download-product-files -p stemcells-ubuntu-xenial -r 315.34 -g light-bosh-stemcell-315.34-aws-xen-hvm-ubuntu-xenial-go_agent.tgz
         ```
 
-    *   Upload to BOSH
+    *   Upload Stemcell & Releases to BOSH
 
         Alias the BOSH Commandline Credentials to `boshc`
 
@@ -106,10 +112,11 @@ All commands assume `pwd` is `terraforming-control-plane`
         boshc upload-release concourse-release-*.tgz
         ```
 
-1.  Update BOSH VM Extensions
+1.  Deploy the Control Plane Components Manifest
 
-    ```
+    *   Download the Manifest
+        ```
+        pivnet download-product-files -p p-control-plane-components -r 0.0.34 -g control-plane-0.0.34-rc.3.yml -d ../config/
+        ```
 
-    ```
-
-pivnet download-product-files -p p-control-plane-components -r 0.0.34 -g control-plane-0.0.34-rc.3.yml && \
+    *   Deploy the Manifest
