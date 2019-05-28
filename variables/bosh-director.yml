@@ -1,0 +1,15 @@
+---
+vms_security_group_id: sg-0cf6e1d4124fa0ef0
+ops_manager_ssh_public_key_name: control-ops-manager-key
+
+infrastructure_subnet_0: subnet-088cb587c4a2b004e
+infrastructure_subnet_1: subnet-0f5c9e23cee38f06c
+infrastructure_subnet_2: subnet-00ca351a3ea684ecc
+
+control-plane_subnet_0: subnet-0d3b27699d1203ff9
+control-plane_subnet_1: subnet-0e2e50a3c20f7a812
+control-plane_subnet_2: subnet-0bc792b98cc07f9c6
+
+ntp_servers: 0.amazon.pool.ntp.org, 1.amazon.pool.ntp.org, 2.amazon.pool.ntp.org, 3.amazon.pool.ntp.org
+
+ops_manager_bucket: control-ops-manager-bucket-7063
