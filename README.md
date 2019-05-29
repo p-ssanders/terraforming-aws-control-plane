@@ -121,6 +121,8 @@ All commands assume `pwd` is `terraforming-control-plane` unless directed otherw
         ```
 
     *   Deploy the Manifest
+        * Note: many of the secrets can be obtained from Credhub via `credhub find -n <DEPLOYMENT NAME>`
+
         ```
         eval "$(om bosh-env --ssh-private-key /tmp/opsmgrkey)"
 
