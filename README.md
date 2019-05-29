@@ -14,7 +14,7 @@ All commands assume `pwd` is `terraforming-control-plane` unless directed otherw
 
 1.  Update DNS
 
-    *TODO* terraform should do this
+    **TODO** terraform should do this
 
     https://docs.pivotal.io/pivotalcf/2-5/om/aws/prepare-env-terraform.html#dns
 
@@ -67,10 +67,7 @@ All commands assume `pwd` is `terraforming-control-plane` unless directed otherw
 
 1.  Upload Control Plane Components BOSH Releases
 
-    *   SSH to OpsManager VM
-        ```
-        ssh -i /tmp/opsmgrkey ubuntu@pcf.aws.sam.pcftest.net
-        ```
+    *   _(optional)_ SSH to OpsManager VM for better network performance
 
     *   Get Pivnet CLI
         ```
@@ -89,7 +86,9 @@ All commands assume `pwd` is `terraforming-control-plane` unless directed otherw
         pivnet download-product-files -p p-control-plane-components -r 0.0.34 -g uaa-release-69.0-315.34.tgz && \
         pivnet download-product-files -p p-control-plane-components -r 0.0.34 -g garden-runc-release-1.19.1-315.34.tgz && \
         pivnet download-product-files -p p-control-plane-components -r 0.0.34 -g credhub-release-1.9.9-315.34.tgz && \
-        pivnet download-product-files -p p-control-plane-components -r 0.0.34 -g concourse-release-4.2.4-315.34.tgz
+        pivnet download-product-files -p p-control-plane-components -r 0.0.34 -g concourse-release-4.2.4-315.34.tgz && \
+        pivnet download-product-files -p p-control-plane-components -r 0.0.34 -g postgres-release-37-315.34.tgz && \
+        pivnet download-product-files -p p-control-plane-components -r 0.0.34 -g bosh-dns-aliases-release-0.0.3-315.34.tgz
         ```
 
     *   Download the Stemcell
@@ -101,18 +100,20 @@ All commands assume `pwd` is `terraforming-control-plane` unless directed otherw
 
     *   Upload Stemcell & Releases to BOSH
 
-        Alias the BOSH Commandline Credentials to `boshc`
-
         ```
-        boshc upload-stemcell *bosh-stemcell*.tgz
+        eval "$(om bosh-env --ssh-private-key /tmp/opsmgrkey)"
 
-        boshc upload-release uaa-release-*.tgz && \
-        boshc upload-release garden-runc-release-*.tgz && \
-        boshc upload-release credhub-release-*.tgz && \
-        boshc upload-release concourse-release-*.tgz
+        bosh upload-stemcell *bosh-stemcell*.tgz
+
+        bosh upload-release uaa-release-*.tgz && \
+        bosh upload-release garden-runc-release-*.tgz && \
+        bosh upload-release credhub-release-*.tgz && \
+        bosh upload-release concourse-release-*.tgz && \
+        bosh upload-release postgres-release-*.tgz && \
+        bosh upload-release bosh-dns-aliases-release-*.tgz
         ```
 
-1.  Deploy the Control Plane Components Manifest
+1.  Deploy the Control Plane Components via Manifest
 
     *   Download the Manifest
         ```
@@ -120,3 +121,18 @@ All commands assume `pwd` is `terraforming-control-plane` unless directed otherw
         ```
 
     *   Deploy the Manifest
+        ```
+        eval "$(om bosh-env --ssh-private-key /tmp/opsmgrkey)"
+
+        bosh deploy -d control-plane ../config/control-plane*.yml --vars-file=../variables/control-plane.yml --vars-file=../secrets/control-plane.yml --ops-file=../operations/control-plane.yml
+        ```
+
+1.  Validate Deployment
+
+    *   Get the Concourse Admin Password
+        ```
+        eval "$(om bosh-env --ssh-private-key /tmp/opsmgrkey)"
+        credhub get -n $(credhub find | grep uaa_users_admin | awk '{print $3}')
+        ```
+
+    *   Login to Concourse https://plane.control.sam.pcftest.net using `admin/<THE ADMIN PASSWORD>`

@@ -13,9 +13,3 @@ control-plane_subnet_1: subnet-0e2e50a3c20f7a812
 control-plane_subnet_2: subnet-0bc792b98cc07f9c6
 
 vms_security_group_id: sg-0cf6e1d4124fa0ef0
-web_lb_target_group: control-atc-https-tg, control-atc-http-tg, control-tsa-tg
-web_lb_security_group: sg-0082e73d8a1db5771
-credhub_lb_target_group: control-credhub-tg
-credhub_lb_security_group: sg-05c98680de1655c2c
-uaa_lb_target_group: control-uaa-tg
-uaa_lb_security_group: sg-05c98680de1655c2c

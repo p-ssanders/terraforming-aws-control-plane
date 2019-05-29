@@ -1,0 +1,11 @@
+- type: replace
+  path: /instance_groups/name=web/vm_extensions?
+  value: [control-plane-lb-cloud-properties]
+
+- type: replace
+  path: /instance_groups/name=uaa/vm_extensions?
+  value: [uaa-lb-cloud-properties]
+
+- type: replace
+  path: /instance_groups/name=credhub/vm_extensions?
+  value: [credhub-lb-cloud-properties]
