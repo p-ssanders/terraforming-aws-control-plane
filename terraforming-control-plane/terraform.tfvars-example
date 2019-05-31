@@ -1,0 +1,22 @@
+env_name           = "control"
+access_key         = 
+secret_key         = 
+region             = "us-east-1"
+availability_zones = ["us-east-1a"]
+ops_manager_ami    = "ami-0101bd84e53b5d37b"
+dns_suffix         = "fionathebluepittie.com"
+hosted_zone        = "fionathebluepittie.com"
+vpc_cidr           = "10.0.0.0/16"
+rds_instance_count = 1
+
+ssl_cert = <<EOF
+EOF
+
+ssl_private_key = <<EOF
+EOF
+
+tags = {
+    Team = "sam"
+    Project = "control-plane"
+}
+

@@ -6,11 +6,14 @@ All commands assume `pwd` is `terraforming-control-plane` unless directed otherw
 
 1.  Terraform
 
-    ```
-    terraform init
-    terraform plan -out=control-plane.tfplan
-    terraform apply control-plane.tfplan
-    ```
+    *   Create a `terraform.tfvars` file using `terraform.tfvars-example` as a template
+
+    *   Terraform
+        ```
+        terraform init
+        terraform plan -out=control-plane.tfplan
+        terraform apply control-plane.tfplan
+        ```
 
 1.  Update DNS
 
@@ -121,7 +124,7 @@ All commands assume `pwd` is `terraforming-control-plane` unless directed otherw
         ```
 
     *   Deploy the Manifest
-        * Note: many of the secrets can be obtained from Credhub via `credhub find -n <DEPLOYMENT NAME>`
+        * Note: many of the secrets can be obtained from BOSH's Credhub via `credhub find -n <DEPLOYMENT NAME>`
 
         ```
         eval "$(om bosh-env --ssh-private-key /tmp/opsmgrkey)"

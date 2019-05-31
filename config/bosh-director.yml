@@ -67,7 +67,7 @@ properties-configuration:
     region: us-east-1
   director_configuration:
     blobstore_type: s3
-    bosh_recreate_on_next_deploy: false
+    bosh_recreate_on_next_deploy: true
     bosh_recreate_persistent_disks_on_next_deploy: false
     database_type: internal
     director_worker_count: 5
@@ -111,22 +111,34 @@ resource-configuration:
 vmextensions-configuration:
   - name: control-plane-lb-security-groups
     cloud_properties:
-      security_groups: ["control_plane_security_group", "vms_security_group"]
+      security_groups: 
+      - control_plane_security_group
+      - vms_security_group
   - name: credhub-lb-cloud-properties
     cloud_properties:
       security_groups:
-      - control_plane_internal_security_group
+      - control_plane_security_group
       - vms_security_group
-      lb_target_groups: ["control-credhub-tg"]
+      lb_target_groups:
+      - control-credhub-tg
   - name: uaa-lb-cloud-properties
     cloud_properties:
       security_groups:
       - control_plane_security_group
       - vms_security_group
-      lb_target_groups: ["control-uaa-tg"]
+      lb_target_groups:
+      - control-uaa-tg
   - name: control-plane-lb-cloud-properties
     cloud_properties:
       security_groups:
       - control_plane_security_group
       - vms_security_group
-      lb_target_groups: ["control-atc-https-tg", "control-atc-http-tg", "control-tsa-tg"]
+      lb_target_groups:
+      - control-atc-https-tg
+      - control-atc-http-tg
+      - control-tsa-tg
+  - name: worker-lb-cloud-properties
+    cloud_properties:
+      security_groups:
+      - control_plane_internal_security_group
+      - vms_security_group
