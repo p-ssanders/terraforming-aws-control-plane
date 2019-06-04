@@ -3,7 +3,6 @@
   value: control-plane-lb-cloud-properties
 
 # ATC
-
 - type: replace
   path: /instance_groups/name=web/jobs/name=atc/properties/credhub/tls/ca_cert/certificate?
   value: |
@@ -47,7 +46,7 @@
   path: /instance_groups/name=web/jobs/name=uaa/properties/login/saml/serviceProviderKey?
   value: ((lets_encrypt_cert.private_key))
 
-#Credhub
+# Credhub
 - type: replace
   path: /instance_groups/name=web/jobs/name=credhub/properties/credhub/tls/certificate?
   value: |

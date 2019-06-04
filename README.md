@@ -1,8 +1,6 @@
-#   Control Plane with Let's Encrypt Certificates on AWS 
+#   Control Plane with Let's Encrypt Certificates on AWS
 
-Reference Documentation: https://control-plane-docs.cfapps.io/
-
-All commands assume `pwd` is `terraforming-control-plane` unless directed otherwise.
+This repository contains a guide and supporting files to deploy a Control Plane with Let's Encrypt Certificates on AWS.
 
 1.  Generate Let's Encrypt Certificates
 
@@ -20,6 +18,7 @@ All commands assume `pwd` is `terraforming-control-plane` unless directed otherw
 
     *   Terraform
         ```
+        cd terraforming-control-plane
         terraform init
         terraform plan -out=control-plane.tfplan
         terraform apply control-plane.tfplan
@@ -45,8 +44,8 @@ All commands assume `pwd` is `terraforming-control-plane` unless directed otherw
     -dp keepitsimple
 
     om update-ssl-certificate \
-    --certificate-pem "$(cat ../certs/fullchain.pem)" \
-    --private-key-pem "$(cat ../certs/privkey.pem)"
+    --certificate-pem "$(cat certs/fullchain.pem)" \
+    --private-key-pem "$(cat certs/privkey.pem)"
 
     unset OM_SKIP_SSL_VALIDATION
     ```
@@ -58,9 +57,9 @@ All commands assume `pwd` is `terraforming-control-plane` unless directed otherw
     *   Configure the BOSH Director
         ```
         om configure-director \
-        -c ../config/bosh-director.yml \
-        --vars-file ../variables/bosh-director.yml \
-        --vars-file ../secrets/bosh-director.yml
+        -c config/bosh-director.yml \
+        --vars-file variables/bosh-director.yml \
+        --vars-file secrets/bosh-director.yml
         ```
 
 1.  Apply Changes
@@ -168,7 +167,7 @@ All commands assume `pwd` is `terraforming-control-plane` unless directed otherw
         -p p-control-plane-components \
         -r 0.0.31 \
         -g control-plane-0.0.31-rc.1.yml \
-        -d ../config/
+        -d config/
         ```
 
     *   Convert Let's Encrypt Private Key to RSA
@@ -177,6 +176,10 @@ All commands assume `pwd` is `terraforming-control-plane` unless directed otherw
         ```
 
     *   Create Entries in BOSH's Credhub
+
+        * `ca.pem` contains the contents of `certs/chain.pem`
+        * `certificate.pem` contains the contents of `certs/cert.pem`
+        * `private_key.pem` contains the contents of `certs/private_key.pem`
         ```
         eval "$(om bosh-env)"
 
@@ -185,11 +188,6 @@ All commands assume `pwd` is `terraforming-control-plane` unless directed otherw
         -r "$(cat ca.pem)" \
         -c "$(cat cert.pem)" \
         -p "$(cat private_key.pem.rsa.key)"
-        
-        # where:
-        # ca.pem == ../certs/chain.pem
-        # certificate.pem == ../certs/cert.pem
-        # private_key.pem == ../certs/private_key.pem
         ```
 
     *   Exit OpsManager VM
@@ -198,7 +196,10 @@ All commands assume `pwd` is `terraforming-control-plane` unless directed otherw
         ```
         eval "$(om bosh-env --ssh-private-key /tmp/opsmgrkey)"
 
-        bosh deploy -d control-plane ../config/control-plane*.yml --vars-file=../variables/control-plane.yml --ops-file=../operations/control-plane.yml
+        bosh deploy \
+        -d control-plane config/control-plane*.yml \
+        --vars-file=variables/control-plane.yml \
+        --ops-file=operations/control-plane.yml
         ```
 
 1.  Validate Deployment
@@ -209,4 +210,4 @@ All commands assume `pwd` is `terraforming-control-plane` unless directed otherw
         credhub get -n $(credhub find | grep uaa_users_admin | awk '{print $3}')
         ```
 
-    *   Login to Concourse https://plane.control.sam.pcftest.net using `admin/<THE ADMIN PASSWORD>`
+    *   Login to Concourse https://plane.control.fionathebluepittie.com using `admin/<THE ADMIN PASSWORD>`
