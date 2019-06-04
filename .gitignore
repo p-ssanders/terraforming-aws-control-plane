@@ -1,10 +1,10 @@
 ci/
 scripts/
+terraforming-control-plane/.terraform/
+secrets/*.yml
 *.tfvars
 *.pem
-.envrc
 *.tfstate
 *.tfplan
 *.tfstate.backup
-terraforming-control-plane/.terraform/
-secrets/*.yml
+.envrc

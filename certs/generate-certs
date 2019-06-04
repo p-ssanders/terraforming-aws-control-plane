@@ -1,4 +1,0 @@
-sudo certbot --server https://acme-v02.api.letsencrypt.org/directory \
--d control.fionathebluepittie.com \
--d *.control.fionathebluepittie.com \
---manual --preferred-challenges dns-01 certonly

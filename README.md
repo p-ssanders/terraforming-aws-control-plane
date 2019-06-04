@@ -1,12 +1,20 @@
-#   Control Plane on AWS
+#   Control Plane with Let's Encrypt Certificates on AWS 
 
 Reference Documentation: https://control-plane-docs.cfapps.io/
 
 All commands assume `pwd` is `terraforming-control-plane` unless directed otherwise.
 
-1.  Terraform
+1.  Generate Let's Encrypt Certificates
 
-    *   Generate certs (see `../certs/generate-certs`)
+    ```
+    sudo certbot \
+    --server https://acme-v02.api.letsencrypt.org/directory \
+    -d control.fionathebluepittie.com \
+    -d *.control.fionathebluepittie.com \
+    --manual --preferred-challenges dns-01 certonly
+    ```
+
+1.  "Pave the IaaS"
 
     *   Create a `terraform.tfvars` file using `terraform.tfvars-example` as a template
 
@@ -30,8 +38,16 @@ All commands assume `pwd` is `terraforming-control-plane` unless directed otherw
     export OM_USERNAME=admin
     export OM_PASSWORD=$(openssl rand -base64 10)
     export OM_SKIP_SSL_VALIDATION=true
-    om configure-authentication -u $OM_USERNAME -p $OM_PASSWORD -dp keepitsimple
-    om update-ssl-certificate --certificate-pem "$(cat ../certs/fullchain.pem)" --private-key-pem "$(cat ../certs/privkey.pem)"
+
+    om configure-authentication \
+    -u $OM_USERNAME \
+    -p $OM_PASSWORD \
+    -dp keepitsimple
+
+    om update-ssl-certificate \
+    --certificate-pem "$(cat ../certs/fullchain.pem)" \
+    --private-key-pem "$(cat ../certs/privkey.pem)"
+
     unset OM_SKIP_SSL_VALIDATION
     ```
 
@@ -41,7 +57,10 @@ All commands assume `pwd` is `terraforming-control-plane` unless directed otherw
 
     *   Configure the BOSH Director
         ```
-        om configure-director -c ../config/bosh-director.yml --vars-file ../variables/bosh-director.yml --vars-file ../secrets/bosh-director.yml
+        om configure-director \
+        -c ../config/bosh-director.yml \
+        --vars-file ../variables/bosh-director.yml \
+        --vars-file ../secrets/bosh-director.yml
         ```
 
 1.  Apply Changes
@@ -62,7 +81,12 @@ All commands assume `pwd` is `terraforming-control-plane` unless directed otherw
 
     *   Login to Postgres
         ```
-        psql --host <terraform output rds_address> --port <terraform output rds_port>  --username <terraform output rds_username> --dbname="postgres"
+        psql \
+        --host <terraform output rds_address> \
+        --port <terraform output rds_port> \
+        --username <terraform output rds_username> \
+        --dbname="postgres"
+
         <enter `terraform output rds_password`>
         ```
 
@@ -104,8 +128,13 @@ All commands assume `pwd` is `terraforming-control-plane` unless directed otherw
     *   Download the Stemcell
         ```
         pivnet release-dependencies -p p-control-plane-components -r 0.0.31
+
         pivnet accept-eula -p stemcells-ubuntu-xenial -r 250.17
-        pivnet download-product-files -p stemcells-ubuntu-xenial -r 250.17 -g light-bosh-stemcell-250.17-aws-xen-hvm-ubuntu-xenial-go_agent.tgz
+
+        pivnet download-product-files \
+        -p stemcells-ubuntu-xenial \
+        -r 250.17 \
+        -g light-bosh-stemcell-250.17-aws-xen-hvm-ubuntu-xenial-go_agent.tgz
         ```
 
     *   Install [`om` CLI](https://github.com/pivotal-cf/om#installation)
@@ -135,7 +164,11 @@ All commands assume `pwd` is `terraforming-control-plane` unless directed otherw
 
     *   Download the Manifest
         ```
-        pivnet download-product-files -p p-control-plane-components -r 0.0.31 -g control-plane-0.0.31-rc.1.yml -d ../config/
+        pivnet download-product-files \
+        -p p-control-plane-components \
+        -r 0.0.31 \
+        -g control-plane-0.0.31-rc.1.yml \
+        -d ../config/
         ```
 
     *   Convert Let's Encrypt Private Key to RSA
