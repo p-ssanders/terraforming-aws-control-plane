@@ -19,3 +19,14 @@ resource "aws_route53_record" "uaa" {
 
   records = ["${aws_lb.control_plane.dns_name}"]
 }
+
+resource "aws_route53_record" "credhub" {
+  count = "${var.use_route53}"
+
+  zone_id = "${var.zone_id}"
+  name    = "credhub.${var.env_name}.${var.dns_suffix}"
+  type    = "CNAME"
+  ttl     = 300
+
+  records = ["${aws_lb.control_plane.dns_name}"]
+}
