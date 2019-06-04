@@ -1,7 +1,7 @@
+---
+external_url: https://plane.control.fionathebluepittie.com
 network_name: control-plane
 azs: ["us-east-1a","us-east-1b","us-east-1c"]
-wildcard_domain: "*.control.sam.pcftest.net"
-external_url: https://plane.control.sam.pcftest.net
-uaa_url: https://uaa.control.sam.pcftest.net:8443
+wildcard_domain: plane.control.fionathebluepittie.com
 persistent_disk_type: 10240
 vm_type: m4.large

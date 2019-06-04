@@ -6,6 +6,8 @@ All commands assume `pwd` is `terraforming-control-plane` unless directed otherw
 
 1.  Terraform
 
+    *   Generate certs (see `../certs/generate-certs`)
+
     *   Create a `terraform.tfvars` file using `terraform.tfvars-example` as a template
 
     *   Terraform
@@ -35,9 +37,12 @@ All commands assume `pwd` is `terraforming-control-plane` unless directed otherw
 
 1.  Configure BOSH Director
 
-    ```
-    om configure-director -c ../config/bosh-director.yml --vars-file ../variables/bosh-director.yml --vars-file ../secrets/bosh-director.yml
-    ```
+    *   Update the `variables/bosh-director.yml` file, and create the `secrets/bosh-director.yml` file using `secrets/bosh-director.yml-example` as a template
+
+    *   Configure the BOSH Director
+        ```
+        om configure-director -c ../config/bosh-director.yml --vars-file ../variables/bosh-director.yml --vars-file ../secrets/bosh-director.yml
+        ```
 
 1.  Apply Changes
 
@@ -52,7 +57,7 @@ All commands assume `pwd` is `terraforming-control-plane` unless directed otherw
         ```
         terraform output ops_manager_ssh_private_key > /tmp/opsmgrkey
         chmod 0400 /tmp/opsmgrkey
-        ssh -i /tmp/opsmgrkey ubuntu@pcf.control.sam.pcftest.net
+        ssh -i /tmp/opsmgrkey ubuntu@$(terraform output ops_manager_dns)
         ```
 
     *   Login to Postgres
@@ -70,9 +75,12 @@ All commands assume `pwd` is `terraforming-control-plane` unless directed otherw
 
 1.  Upload Control Plane Components BOSH Releases
 
-    *   _(optional)_ SSH to OpsManager VM for better network performance
+    *   SSH to OpsManager VM
+        ```
+        ssh -i /tmp/opsmgrkey ubuntu@$(terraform output ops_manager_dns)
+        ```
 
-    *   Get Pivnet CLI
+    *   Install Pivnet CLI
         ```
         sudo su -
         wget https://github.com/pivotal-cf/pivnet-cli/releases/download/v0.0.58/pivnet-linux-amd64-0.0.58
@@ -84,22 +92,23 @@ All commands assume `pwd` is `terraforming-control-plane` unless directed otherw
         ```
         pivnet login --api-token <YOUR_PIVNET_TOKEN>
 
-        pivnet accept-eula -p p-control-plane-components -r 0.0.34
+        pivnet accept-eula -p p-control-plane-components -r 0.0.31
 
-        pivnet download-product-files -p p-control-plane-components -r 0.0.34 -g uaa-release-69.0-315.34.tgz && \
-        pivnet download-product-files -p p-control-plane-components -r 0.0.34 -g garden-runc-release-1.19.1-315.34.tgz && \
-        pivnet download-product-files -p p-control-plane-components -r 0.0.34 -g credhub-release-1.9.9-315.34.tgz && \
-        pivnet download-product-files -p p-control-plane-components -r 0.0.34 -g concourse-release-4.2.4-315.34.tgz && \
-        pivnet download-product-files -p p-control-plane-components -r 0.0.34 -g postgres-release-37-315.34.tgz && \
-        pivnet download-product-files -p p-control-plane-components -r 0.0.34 -g bosh-dns-aliases-release-0.0.3-315.34.tgz
+        pivnet download-product-files -p p-control-plane-components -r 0.0.31 -g uaa-release-69.0-250.17.tgz && \
+        pivnet download-product-files -p p-control-plane-components -r 0.0.31 -g garden-runc-release-1.18.2-250.17.tgz && \
+        pivnet download-product-files -p p-control-plane-components -r 0.0.31 -g credhub-release-1.9.9-250.17.tgz && \
+        pivnet download-product-files -p p-control-plane-components -r 0.0.31 -g concourse-release-4.2.3-250.17.tgz && \
+        pivnet download-product-files -p p-control-plane-components -r 0.0.31 -g postgres-release-36-250.17.tgz
         ```
 
     *   Download the Stemcell
         ```
-        pivnet release-dependencies -p p-control-plane-components -r 0.0.34
-        pivnet accept-eula -p stemcells-ubuntu-xenial -r 315.34
-        pivnet download-product-files -p stemcells-ubuntu-xenial -r 315.34 -g light-bosh-stemcell-315.34-aws-xen-hvm-ubuntu-xenial-go_agent.tgz
+        pivnet release-dependencies -p p-control-plane-components -r 0.0.31
+        pivnet accept-eula -p stemcells-ubuntu-xenial -r 250.17
+        pivnet download-product-files -p stemcells-ubuntu-xenial -r 250.17 -g light-bosh-stemcell-250.17-aws-xen-hvm-ubuntu-xenial-go_agent.tgz
         ```
+
+    *   Install [`om` CLI](https://github.com/pivotal-cf/om#installation)
 
     *   Upload Stemcell & Releases to BOSH
 
@@ -112,31 +121,58 @@ All commands assume `pwd` is `terraforming-control-plane` unless directed otherw
         bosh upload-release garden-runc-release-*.tgz && \
         bosh upload-release credhub-release-*.tgz && \
         bosh upload-release concourse-release-*.tgz && \
-        bosh upload-release postgres-release-*.tgz && \
-        bosh upload-release bosh-dns-aliases-release-*.tgz
+        bosh upload-release postgres-release-*.tgz
         ```
 
 1.  Deploy the Control Plane Components via Manifest
 
+    *   SSH to OpsManager VM
+        ```
+        ssh -i /tmp/opsmgrkey ubuntu@$(terraform output ops_manager_dns)
+        sudo su -
+        cd /home/ubuntu
+        ```
+
     *   Download the Manifest
         ```
-        pivnet download-product-files -p p-control-plane-components -r 0.0.34 -g control-plane-0.0.34-rc.3.yml -d ../config/
+        pivnet download-product-files -p p-control-plane-components -r 0.0.31 -g control-plane-0.0.31-rc.1.yml -d ../config/
         ```
 
-    *   Deploy the Manifest
-        * Note: many of the secrets can be obtained from BOSH's Credhub via `credhub find -n <DEPLOYMENT NAME>`
+    *   Convert Let's Encrypt Private Key to RSA
+        ```
+        openssl rsa -in private_key.pem -out private_key.pem.rsa.key
+        ```
 
+    *   Create Entries in BOSH's Credhub
+        ```
+        eval "$(om bosh-env)"
+
+        credhub set -n /p-bosh/control-plane/lets_encrypt_cert \
+        -t certificate \
+        -r "$(cat ca.pem)" \
+        -c "$(cat cert.pem)" \
+        -p "$(cat private_key.pem.rsa.key)"
+        
+        # where:
+        # ca.pem == ../certs/chain.pem
+        # certificate.pem == ../certs/cert.pem
+        # private_key.pem == ../certs/private_key.pem
+        ```
+
+    *   Exit OpsManager VM
+
+    *   Deploy the Manifest
         ```
         eval "$(om bosh-env --ssh-private-key /tmp/opsmgrkey)"
 
-        bosh deploy -d control-plane ../config/control-plane*.yml --vars-file=../variables/control-plane.yml --vars-file=../secrets/control-plane.yml --ops-file=../operations/control-plane.yml
+        bosh deploy -d control-plane ../config/control-plane*.yml --vars-file=../variables/control-plane.yml --ops-file=../operations/control-plane.yml
         ```
 
 1.  Validate Deployment
 
     *   Get the Concourse Admin Password
         ```
-        eval "$(om bosh-env --ssh-private-key /tmp/opsmgrkey)"
+        eval "$(om bosh-env)"
         credhub get -n $(credhub find | grep uaa_users_admin | awk '{print $3}')
         ```
 
