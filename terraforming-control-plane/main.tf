@@ -10,9 +10,9 @@ terraform {
   required_version = "< 0.12.0"
 
   backend "s3" {
-    bucket = "pcf.practice"
+    bucket = "com.fionathebluepittie"
     key    = "control-plane/terraform.tfstate"
-    region = "us-east-1"
+    region = "us-east-2"
   }
 }
 
