@@ -5,3 +5,4 @@ azs: ["us-east-1a","us-east-1b","us-east-1c"]
 wildcard_domain: plane.control.fionathebluepittie.com
 persistent_disk_type: 10240
 vm_type: m4.large
+worker_vm_type: m4.sam
