@@ -1,0 +1,7 @@
+- cloud_properties:
+    ephemeral_disk:
+      size: 262144
+      type: gp2
+    instance_type: m4.large
+    raw_instance_storage: false
+  name: m4.sam

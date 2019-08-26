@@ -196,6 +196,8 @@ This repository contains a guide and supporting files to deploy a Control Plane 
         ```
         eval "$(om bosh-env --ssh-private-key /tmp/opsmgrkey)"
 
+        bosh update-cloud-config config/cloud-config.yml
+
         bosh deploy \
         -d control-plane config/control-plane*.yml \
         --vars-file=variables/control-plane.yml \
